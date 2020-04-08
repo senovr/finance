@@ -41,26 +41,49 @@ df_bond = tapi.get_instruments(con=con, instrument="Bond")
 endTime = datetime.now()
 startTime = endTime - timedelta(days=10)
 list_of_securities = []
-df_data_etf = tapi.get_detailed_data(
-    con=con, data=df_etf, _from=startTime, to=endTime, days_span=10
-)
-list_of_securities.append(df_data_etf)
-df_data_bonds = tapi.get_detailed_data(
-    con=con, data=df_bond, _from=startTime, to=endTime, days_span=10
-)
-list_of_securities.append(df_data_bonds)
-df_data_stock = tapi.get_detailed_data(
-    con=con, data=df_stock, _from=startTime, to=endTime, days_span=10
-)
-list_of_securities.append(df_data_stock)
+
+try:
+    df_data_etf = tapi.get_detailed_data(
+        con=con, data=df_etf, _from=startTime, to=endTime, days_span=10
+    )
+    list_of_securities.append(df_data_etf)
+except Exception as error:
+    logger.eror("scrip failed during downloading ETF data")
+    logger.error(f"exception catched: {error}")
+
+try:
+    df_data_bonds = tapi.get_detailed_data(
+        con=con, data=df_bond, _from=startTime, to=endTime, days_span=10
+    )
+    list_of_securities.append(df_data_bonds)
+except Exception as error:
+    logger.eror("scrip failed during downloading Bonds data")
+    logger.error(f"exception catched: {error}")
+
+try:
+    df_data_stock = tapi.get_detailed_data(
+        con=con, data=df_stock, _from=startTime, to=endTime, days_span=10
+    )
+    list_of_securities.append(df_data_stock)
+except Exception as error:
+    logger.eror("scrip failed during downloading Stocks data")
+    logger.error(f"exception catched: {error}")
+
 df = pd.concat(list_of_securities)
 logger.info("Creating connection to clickhouse")
 con, ping = chh.connect(server_adress)
 
 logger.info("Uploading data to clickhouse")
-chh.append_df_to_SQL_table(
-    df=df, table_name=table_name, server_ip=server_adress, is_tmp_table_to_delete=True,
-)
+try:
+    chh.append_df_to_SQL_table(
+        df=df,
+        table_name=table_name,
+        server_ip=server_adress,
+        is_tmp_table_to_delete=True,
+    )
+except Exception as error:
+    logger.eror("scrip failed during pushing data to clickhouse")
+    logger.error(f"exception catched: {error}")
 
 chh.close_connection(con)
 
