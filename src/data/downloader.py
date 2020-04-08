@@ -12,6 +12,9 @@ from dotenv import load_dotenv, find_dotenv
 import os
 from datetime import datetime, timedelta
 import time
+import logging
+import logging.config
+import utilities_timers
 
 logging.config.fileConfig(fname="logger.conf", disable_existing_loggers=False)
 logger = logging.getLogger(__name__)
@@ -24,9 +27,9 @@ token = os.environ.get("APIKEY_SANDBOX")
 usr = os.environ.get("CLICKHOUSE_USER")
 pwd = os.environ.get("CLICKHOUSE_PWD")
 # 2.testing the instrument  querying.
-server_adress = "192.168.1.128"
-db_name = "default"
-table_name = "minutes"
+server_adress = os.environ.get("CLICKHOUSE_SERVER_ADRESS")
+db_name = os.environ.get("CLICKHOUSE_DB_NAME")
+table_name = os.environ.get("CLICKHOUSE_TABLE_NAME")
 
 con, _ = tapi.connect(token)
 df_etf = tapi.get_instruments(con=con, instrument="Etf")
@@ -50,7 +53,16 @@ df_data_stock = tapi.get_detailed_data(
     con=con, data=df_stock, _from=startTime, to=endTime, days_span=10
 )
 list_of_securities.append(df_data_stock)
+df = pd.concat(list_of_securities)
+logger.info("Creating connection to clickhouse")
+con, ping = chh.connect(server_adress)
 
+logger.info("Uploading data to clickhouse")
+chh.append_df_to_SQL_table(
+    df=df, table_name=table_name, server_ip=server_adress, is_tmp_table_to_delete=True,
+)
+
+chh.close_connection(con)
 
 timer_string = utilities_timers.format_timer_string(time.time() - start)
 logger.info(f"Script runs for {timer_string}")
