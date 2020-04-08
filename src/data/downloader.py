@@ -48,7 +48,7 @@ try:
     )
     list_of_securities.append(df_data_etf)
 except Exception as error:
-    logger.eror("scrip failed during downloading ETF data")
+    logger.error("scrip failed during downloading ETF data")
     logger.error(f"exception catched: {error}")
 
 try:
@@ -57,7 +57,7 @@ try:
     )
     list_of_securities.append(df_data_bonds)
 except Exception as error:
-    logger.eror("scrip failed during downloading Bonds data")
+    logger.error("scrip failed during downloading Bonds data")
     logger.error(f"exception catched: {error}")
 
 try:
@@ -66,7 +66,7 @@ try:
     )
     list_of_securities.append(df_data_stock)
 except Exception as error:
-    logger.eror("scrip failed during downloading Stocks data")
+    logger.error("scrip failed during downloading Stocks data")
     logger.error(f"exception catched: {error}")
 
 df = pd.concat(list_of_securities)
@@ -82,7 +82,7 @@ try:
         is_tmp_table_to_delete=True,
     )
 except Exception as error:
-    logger.eror("scrip failed during pushing data to clickhouse")
+    logger.error("scrip failed during pushing data to clickhouse")
     logger.error(f"exception catched: {error}")
 
 chh.close_connection(con)
