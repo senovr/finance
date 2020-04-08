@@ -72,12 +72,12 @@ def connect(token=None):
     # except InterfaceError: # not tested.
     #    print("InterfaceError error is catched.")
     except Exception as exc:
-        
+
         logger.error(f"generated an exception: {exc}")
         client = None
         ping = str(exc)
     else:
-        logger.info("connected to database.")
+        logger.info("connected to API web service.")
 
     return client, ping
 
@@ -165,7 +165,7 @@ def detailed_history(
         startTime = _from
     # print(endTime)
     # print(startTime)
-    logger.info(f"generating start and end time lists ...")
+    # logger.info(f"generating start and end time lists ...")
     startTime_list = []
     endTime_list = []
 
@@ -249,7 +249,7 @@ def get_detailed_data(con=None, data=None, _from=None, to=None, days_span=10):
         df = detailed_history(
             con=con, figi=figi, _from=_from, to=to, interval="1min", days_span=days_span
         )
-        time.sleep(1)
+        time.sleep(2)
         list_df.append(df)
 
     data.reset_index(inplace=True, drop=True)
@@ -291,13 +291,13 @@ if __name__ == "__main__":
     logger.info(f"test detailed_history function")
     token = token
     con, _ = connect(token)
-    df = detailed_history(con, days_span=90)
+    df = detailed_history(con, days_span=10)
 
     # 3. Testing etf querrying
     logger.info(f"test get_detailed_data function")
     token = token
     con, _ = connect(token)
-    df = get_detailed_data(con=con, data=df_etf, _from=None, to=None, days_span=90)
+    df = get_detailed_data(con=con, data=df_etf, _from=None, to=None, days_span=10)
 
 """
     ##---------------------------------------------------------------------------------------------

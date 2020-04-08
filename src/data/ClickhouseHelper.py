@@ -297,7 +297,7 @@ def append_df_to_SQL_table(
     """
     start = time.time()
 
-    logger = logging.getLogger("SQL::" + append_df_to_SQL_table.__name__)
+    logger = logging.getLogger("Clickhouse::" + append_df_to_SQL_table.__name__)
 
     ##---------------------------------------------------------------------------------------------
     n_rows, n_cols = df.shape
@@ -336,7 +336,7 @@ def append_df_to_SQL_table(
 
     inserted_rows_count = con.execute("SELECT count(*) FROM tmp")[0][0]
     logger.info(
-        f"Inserted {inserted_rows_count} rows to temporary table. Moving to minutes table"
+        f"Inserted {inserted_rows_count} rows to temporary table. Moving to 'minutes' table"
     )
     initial_rows_count = con.execute("SELECT count(*) FROM minutes")[0][0]
     logger.info(f"initially minutes table has {initial_rows_count} rows")
@@ -365,7 +365,7 @@ def append_df_to_SQL_table(
     timer_string = utilities_timers.format_timer_string(time.time() - start)
     logger.info(timer_string)
 
-    logger.info("new data written to table.")
+    logger.info("new data written to table 'minutes'")
 
 
 ##-----------------------------------------------------------------------------
@@ -427,7 +427,7 @@ if __name__ == "__main__":
     close_connection(con)
 
     ##---------------------------------------------------------------------------------------------
-    is_test_read_SQL_table = True
+    is_test_read_SQL_table = False
     if is_test_read_SQL_table:
         server_adress = "192.168.1.128"
         db_name = "default"
@@ -438,7 +438,7 @@ if __name__ == "__main__":
         close_connection(con)
 
     ##---------------------------------------------------------------------------------------------
-    is_test_append_table = True
+    is_test_append_table = False
     if is_test_append_table:
         server_adress = "192.168.1.128"
         db_name = "default"
