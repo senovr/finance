@@ -44,7 +44,7 @@ list_of_securities = []
 
 try:
     df_data_etf = tapi.get_detailed_data(
-        con=con, data=df_etf, _from=startTime, to=endTime, days_span=10
+        con=con, data=df_etf, _from=startTime, to=endTime, days_span=90
     )
     list_of_securities.append(df_data_etf)
 except Exception as error:

@@ -210,6 +210,8 @@ def query_data_by_time(
     logger = logging.getLogger("Clickhouse::" + query_data_by_time.__name__)
     logger.info("data query in progress ...")
 
+    if channels_list == None:
+        channels_list = ["*"]
     if len(channels_list) == 0:
         channels_list = ["*"]
     if endTime == None:
@@ -243,19 +245,19 @@ def query_data_by_time(
         # endTime = endTime.strftime("%Y-%m-%d")
         logger.info(f"startTime is {startTime}")
         logger.info(f"endTIme is {endTime}")
-        msg1 = f"select uniq(time), count(), ticker, type, day, argMin(o, time) as o,max(h) as h, min(l) as l, argMax(c, time) as c, sum(v) as v "
+        msg1 = f"select uniq(time), count(), ticker, type,currency,name, day, argMin(o, time) as o,max(h) as h, min(l) as l, argMax(c, time) as c, sum(v) as v "
         msg2 = f"from minutes "
         # msg3="where day BETWEEN toDate('{startTime}') AND toDate('{endTime}') AND type='{instrument_type}' "
         msg3 = f"where time BETWEEN '{startTime}' AND '{endTime}' AND type='{instrument_type}' "
-        msg4 = "GROUP BY day, ticker, type ORDER BY day desc"
+        msg4 = "GROUP BY day, ticker, type, currency, name ORDER BY day desc"
         query = msg1 + msg2 + msg3 + msg4
     elif data_freq == "week":
         # startTime = startTime.strftime("%Y-%m-%d")
         # endTime = endTime.strftime("%Y-%m-%d")
-        msg1 = "SELECT uniq(time), count(),ticker, toMonday(day) as monday, argMin(o, time) as o, max(h) as h, min(l) as l, argMax(c, time) as c, sum(v) as v "
+        msg1 = "SELECT uniq(time), count(),ticker,currency, name, toMonday(day) as monday, argMin(o, time) as o, max(h) as h, min(l) as l, argMax(c, time) as c, sum(v) as v "
         msg2 = f"from minutes "
         msg3 = f"where time BETWEEN '{startTime}' AND '{endTime}' AND type='{instrument_type}' "
-        msg4 = "GROUP BY monday, ticker, type ORDER BY monday desc"
+        msg4 = "GROUP BY monday, ticker, type, currency, name ORDER BY monday desc"
         query = msg1 + msg2 + msg3 + msg4
 
     logger.info(f"query string: {query}")
