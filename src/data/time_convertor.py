@@ -17,7 +17,7 @@ def date2seconds(date):
     try:
         convert = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S").timetuple()
         seconds = time.mktime(convert)
-    except:
+    except Exception:
         seconds = 12345678900
     return seconds
 
@@ -79,5 +79,5 @@ def convert_via_datetime(n):
 
 ##-------------------------------------------------------------------------------------------------
 def convert_via_time(seconds):
-    time_string = time.strftime("%H:%M:%S", time.gmtime(n))
+    time_string = time.strftime("%H:%M:%S", time.gmtime(seconds))
     return time_string

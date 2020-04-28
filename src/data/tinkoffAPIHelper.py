@@ -36,6 +36,7 @@ client.sandbox.sandbox_currencies_balance_post(
 #Creating local variable for API name
 apiname="TinkoffAPI::"
 timeformat="%Y-%m-%dT%H:%M:%S"
+gmt_time="+07:00"
 ##-------------------------------------------------------------------------------------------------
 def connect(token=None):
     """
@@ -170,8 +171,8 @@ def detailed_history(
     startTime_list = []
     endTime_list = []
 
-    startTime_list.append(startTime.strftime(timeformat) + "+07:00")
-    endTime_list.append(endTime.strftime(timeformat) + "+07:00")
+    startTime_list.append(startTime.strftime(timeformat) + gmt_time)
+    endTime_list.append(endTime.strftime(timeformat) + gmt_time)
 
     if (endTime - startTime).days > 1:
         startTime_list = []
@@ -180,8 +181,8 @@ def detailed_history(
         for i in range((to - _from).days):
             # print(i)
             newStartTime = endTime - timedelta(days=1)
-            startTime_list.append(newStartTime.strftime(timeformat) + "+07:00")
-            endTime_list.append(endTime.strftime(timeformat) + "+07:00")
+            startTime_list.append(newStartTime.strftime(timeformat) + gmt_time)
+            endTime_list.append(endTime.strftime(timeformat) + gmt_time)
             endTime = newStartTime
 
     list_df = []
