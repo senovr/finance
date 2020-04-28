@@ -33,6 +33,9 @@ client.sandbox.sandbox_clear_post()
 client.sandbox.sandbox_currencies_balance_post(
     sandbox_set_currency_balance_request={"currency": "USD", "balance": 1000}
 )
+#Creating local variable for API name
+apiname="TinkoffAPI::"
+timeformat="%Y-%m-%dT%H:%M:%S"
 ##-------------------------------------------------------------------------------------------------
 def connect(token=None):
     """
@@ -58,7 +61,7 @@ def connect(token=None):
     ping (list of tuples): responce from server
 
     """
-    logger = logging.getLogger("TinkoffAPI::" + connect.__name__)
+    logger = logging.getLogger(apiname + connect.__name__)
 
     logger.info(f"connection to TinkoffAPI is in progress ...")
     client = openapi.sandbox_api_client(token)
@@ -98,7 +101,7 @@ def get_instruments(con=None, instrument=None):
         Error if not defined instrument or wrong instrument name is provided as input.
     """
     start = time.time()
-    logger = logging.getLogger("TinkoffAPI::" + connect.__name__)
+    logger = logging.getLogger(apiname + connect.__name__)
 
     logger.info(f"retrieving available {instrument} is in progress ...")
     if instrument == "Stock":
@@ -150,7 +153,7 @@ def detailed_history(
 
     """
     start = time.time()
-    logger = logging.getLogger("TinkoffAPI::" + detailed_history.__name__)
+    logger = logging.getLogger(apiname + detailed_history.__name__)
 
     logger.info(f"retrieving available data is in progress ...")
     if to == None:
@@ -163,14 +166,12 @@ def detailed_history(
         startTime = _from
     else:
         startTime = _from
-    # print(endTime)
-    # print(startTime)
-    # logger.info(f"generating start and end time lists ...")
+
     startTime_list = []
     endTime_list = []
 
-    startTime_list.append(startTime.strftime("%Y-%m-%dT%H:%M:%S") + "+07:00")
-    endTime_list.append(endTime.strftime("%Y-%m-%dT%H:%M:%S") + "+07:00")
+    startTime_list.append(startTime.strftime(timeformat) + "+07:00")
+    endTime_list.append(endTime.strftime(timeformat) + "+07:00")
 
     if (endTime - startTime).days > 1:
         startTime_list = []
@@ -179,11 +180,10 @@ def detailed_history(
         for i in range((to - _from).days):
             # print(i)
             newStartTime = endTime - timedelta(days=1)
-            startTime_list.append(newStartTime.strftime("%Y-%m-%dT%H:%M:%S") + "+07:00")
-            endTime_list.append(endTime.strftime("%Y-%m-%dT%H:%M:%S") + "+07:00")
+            startTime_list.append(newStartTime.strftime(timeformat) + "+07:00")
+            endTime_list.append(endTime.strftime(timeformat) + "+07:00")
             endTime = newStartTime
-    # print(startTime_list)
-    # print(endTime_list)
+
     list_df = []
     for i in range(len(startTime_list)):
         tickers = con.market.market_candles_get_with_http_info(
@@ -271,7 +271,7 @@ if __name__ == "__main__":
 
     # testing the functions.
     # 1. Connection to API:
-    token = token
+    
     testcon, _ = connect(token)
     logger.info(f"test connect: {testcon}")
     logger.info(
@@ -281,7 +281,7 @@ if __name__ == "__main__":
 
     # 2.testing the instrument  querying.
     logger.info(f"test get_instruments function")
-    token = token
+    
     con, _ = connect(token)
     df_etf = get_instruments(con=con, instrument="Etf")
     df_stock = get_instruments(con=con, instrument="Stock")
@@ -289,13 +289,13 @@ if __name__ == "__main__":
 
     # 3. Testing FIGI querrying
     logger.info(f"test detailed_history function")
-    token = token
+    
     con, _ = connect(token)
     df = detailed_history(con, days_span=10)
 
     # 3. Testing etf querrying
     logger.info(f"test get_detailed_data function")
-    token = token
+    
     con, _ = connect(token)
     df = get_detailed_data(con=con, data=df_etf, _from=None, to=None, days_span=10)
 

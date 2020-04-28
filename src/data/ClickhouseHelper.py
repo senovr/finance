@@ -24,6 +24,7 @@ dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
 usr = os.environ.get("CLICKHOUSE_USER")
 pwd = os.environ.get("CLICKHOUSE_PWD")
+apiname="Clickhouse::"
 # -----------------------------------------------------------------------------
 def connect(instance_name="localhost"):
     """
@@ -41,7 +42,7 @@ def connect(instance_name="localhost"):
     ping (list of tuples): responce from server
 
     """
-    logger = logging.getLogger("Clickhouse::" + connect.__name__)
+    logger = logging.getLogger(apiname + connect.__name__)
 
     logger.info(f"connection to {instance_name } is in progress ...")
     client = Client(instance_name, user=usr, password=pwd)
@@ -162,7 +163,7 @@ def get_SQL_table(connection, table_name):
     """
 
     start = time.time()
-    logger = logging.getLogger("Clickhouse::" + get_SQL_table.__name__)
+    logger = logging.getLogger(apiname + get_SQL_table.__name__)
     logger.info(f"read table {table_name} from Clickhouse")
 
     result, columns = connection.execute(
@@ -207,7 +208,7 @@ def query_data_by_time(
         (pd.DataFrame) : Table with requested channels in a given time range.
     """
     start = time.time()
-    logger = logging.getLogger("Clickhouse::" + query_data_by_time.__name__)
+    logger = logging.getLogger(apiname + query_data_by_time.__name__)
     logger.info("data query in progress ...")
 
     if channels_list == None:
@@ -236,24 +237,22 @@ def query_data_by_time(
     endTime = endTime.strftime("%Y-%m-%d %H:%M:%S")
     if data_freq == "min":
 
-        msg1 = f"select {channel_string} from {table_name} "
+        msg1 = f"select * from {table_name} "
         msg2 = f"where time BETWEEN '{startTime}' AND '{endTime}' "
-        msg3 = f"AND type='{instrument_type}'"
+        msg3 = f"AND type='{instrument_type}' AND name={channel_string}"
         query = msg1 + msg2 + msg3
     elif data_freq == "day":
-        # startTime = startTime.strftime("%Y-%m-%d")
-        # endTime = endTime.strftime("%Y-%m-%d")
+
         logger.info(f"startTime is {startTime}")
         logger.info(f"endTIme is {endTime}")
         msg1 = f"select uniq(time), count(), ticker, type,currency,name, day, argMin(o, time) as o,max(h) as h, min(l) as l, argMax(c, time) as c, sum(v) as v "
         msg2 = f"from minutes "
-        # msg3="where day BETWEEN toDate('{startTime}') AND toDate('{endTime}') AND type='{instrument_type}' "
+
         msg3 = f"where time BETWEEN '{startTime}' AND '{endTime}' AND type='{instrument_type}' "
         msg4 = "GROUP BY day, ticker, type, currency, name ORDER BY day desc"
         query = msg1 + msg2 + msg3 + msg4
     elif data_freq == "week":
-        # startTime = startTime.strftime("%Y-%m-%d")
-        # endTime = endTime.strftime("%Y-%m-%d")
+
         msg1 = "SELECT uniq(time), count(),ticker,currency, name, toMonday(day) as monday, argMin(o, time) as o, max(h) as h, min(l) as l, argMax(c, time) as c, sum(v) as v "
         msg2 = f"from minutes "
         msg3 = f"where time BETWEEN '{startTime}' AND '{endTime}' AND type='{instrument_type}' "
@@ -261,7 +260,7 @@ def query_data_by_time(
         query = msg1 + msg2 + msg3 + msg4
 
     logger.info(f"query string: {query}")
-    # logger.info(f"query params: {params}")
+
     result, columns = con.execute(query, with_column_types=True)
     df = pd.DataFrame(result, columns=[tuple[0] for tuple in columns])
 
@@ -299,7 +298,7 @@ def append_df_to_SQL_table(
     """
     start = time.time()
 
-    logger = logging.getLogger("Clickhouse::" + append_df_to_SQL_table.__name__)
+    logger = logging.getLogger(apiname + append_df_to_SQL_table.__name__)
 
     ##---------------------------------------------------------------------------------------------
     n_rows, n_cols = df.shape
@@ -321,9 +320,9 @@ def append_df_to_SQL_table(
     con, ping = connect(server_ip)
     logger.info(f"data uploading to a temp table  ...")
     # dropping table tmp
-    r1 = con.execute("DROP TABLE IF EXISTS tmp")
+    con.execute("DROP TABLE IF EXISTS tmp")
     # creating new table
-    r2 = con.execute(
+    con.execute(
         "CREATE TABLE tmp ("
         "figi String, "
         "interval String, o Float64, "
@@ -342,7 +341,7 @@ def append_df_to_SQL_table(
     )
     initial_rows_count = con.execute("SELECT count(*) FROM minutes")[0][0]
     logger.info(f"initially minutes table has {initial_rows_count} rows")
-    r3 = con.execute(
+    con.execute(
         "INSERT INTO minutes "
         "SELECT DISTINCT "
         "toDate(time) AS day,"
@@ -362,7 +361,7 @@ def append_df_to_SQL_table(
     logger.info(f"Inserted {inserted_row_count} unique rows to minutes table.")
     logger.info(f"now minutes table has {new_rows_count} rows")
     if is_tmp_table_to_delete:
-        r1 = con.execute("DROP TABLE IF EXISTS tmp")
+        con.execute("DROP TABLE IF EXISTS tmp")
 
     timer_string = utilities_timers.format_timer_string(time.time() - start)
     logger.info(timer_string)
